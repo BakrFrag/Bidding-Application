@@ -7,10 +7,21 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.12"
-fastapi = "^0.128.0"
-uvicorn = "^0.40.0"
 aioredis = "^2.0.1"
+django = "^6.0"
+pydantic-settings = "^2.12.0"
+dj-database-url = "^3.0.1"
+build = "^1.3.0"
+channels = "^4.3.2"
+channels-redis = "^4.3.0"
+daphne = "^4.2.1"
 
+
+[tool.poetry.group.dev.dependencies]
+black = "^25.12.0"
+isort = "^7.0.0"
+django-debug-toolbar = "^6.1.0"
+django-silk = "^5.4.3"
 
 [build-system]
 requires = ["poetry-core"]
