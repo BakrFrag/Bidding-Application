@@ -1,12 +1,12 @@
 from pathlib import Path
-
+from core.configs import APP_SETTINGS
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = "django-insecure-c$i7@+(t5#lz8$*+##%fp4-!$c48ey=%nx@0^5kcpgwavrmm+h"
+SECRET_KEY = APP_SETTINGS.SECRET_KEY
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = APP_SETTINGS.DEBUG
 
 ALLOWED_HOSTS = []
 
@@ -14,10 +14,13 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    "daphn",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.messages",
+    "channels",
+    "bids",
 ]
 
 MIDDLEWARE = [
@@ -32,22 +35,9 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = "core.urls"
 
-TEMPLATES = [
-    {
-        "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
-        "APP_DIRS": True,
-        "OPTIONS": {
-            "context_processors": [
-                "django.template.context_processors.request",
-                "django.contrib.auth.context_processors.auth",
-                "django.contrib.messages.context_processors.messages",
-            ],
-        },
-    },
-]
 
 WSGI_APPLICATION = "core.wsgi.application"
+ASGI_APPLICATION = 'core.asgi.application'
 
 
 # Database
@@ -92,7 +82,12 @@ USE_I18N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/6.0/howto/static-files/
-
-STATIC_URL = "static/"
+# The Channel Layer is the "Glue" for distributed K8s pods
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [APP_SETTINGS.REDIS_URL],
+        },
+    },
+}
