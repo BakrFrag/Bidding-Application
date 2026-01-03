@@ -12,7 +12,6 @@ class BidModelService:
     def _get_history_sync(bid_obj):
         """Internal helper to get history for an existing object."""
         bids_history = bid_obj.history.all()
-        print("bids history:",bids_history, bids_history is not None)
         if bids_history and bids_history is not None:
             return [
                     {"name": h.bidder_name, "price": str(h.price)} 
