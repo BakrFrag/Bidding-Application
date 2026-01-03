@@ -61,6 +61,8 @@ class BidConsumer(AsyncWebsocketConsumer):
             }))
         except Exception as e:
             # General error handling
+            import sys
+            print(sys.exc_info())
             await self.send(text_data=json.dumps({
                 'type': 'error',
                 'message': 'An unexpected error occurred.'

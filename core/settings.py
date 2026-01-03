@@ -8,7 +8,9 @@ SECRET_KEY = APP_SETTINGS.SECRET_KEY
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = APP_SETTINGS.DEBUG
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    "lynda-discalced-donn.ngrok-free.dev"
+]
 
 
 # Application definition

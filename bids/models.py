@@ -22,6 +22,7 @@ class BidHistory(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     bid = models.ForeignKey(Bid, on_delete=models.CASCADE, related_name='history')
     bidder_name = models.CharField(max_length=255)
+    added_at = models.DateTimeField(auto_now_add=True)
     def __str__(self):
         return f"{self.bidder_name} bid {self.price} on {self.bid.name}"
 
