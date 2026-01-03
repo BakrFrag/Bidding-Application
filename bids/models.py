@@ -4,10 +4,16 @@ class Bid(models.Model):
     """
     Bid model represents a bid placed by a user.
     """
+
+    STATUS_CHOICES = [
+        ('open', 'Open'),
+        ('closed', 'Closed'),
+    ]
+
     name = models.CharField(max_length=255)
     initial_price = models.DecimalField(max_digits=10, decimal_places=2, default=100.00)
     created_at = models.DateTimeField(auto_now_add=True)
-
+    status = models.CharField(max_length=50, default='open', choices=STATUS_CHOICES)
     def __str__(self):
         return f"{self.name} - Start: {self.initial_price}"
     class Meta:
