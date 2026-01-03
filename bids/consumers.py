@@ -12,7 +12,7 @@ class BidConsumer(AsyncWebsocketConsumer):
         self.bid_id = self.scope['url_route']['kwargs']['bid_id']
         self.room_group_name = f'bid_{self.bid_id}'
 
-        if not await BidModelService.get_bid_by_id(self.bid_id):
+        if not await BidModelService.is_bid_exists(self.bid_id):
             await self.close() 
             return 
     
@@ -27,12 +27,14 @@ class BidConsumer(AsyncWebsocketConsumer):
         """
         Send the latest bid data to the user who just connected
         """
+        
         current_state = await BidModelService.get_bid_history(self.bid_id)
+        print("Current State:", current_state)
         await self.send(text_data=json.dumps({
             'type': 'initial_state',
             'data': current_state
         }))
-
+        
 
     async def disconnect(self, close_code):
         """
@@ -52,8 +54,9 @@ class BidConsumer(AsyncWebsocketConsumer):
             data = json.loads(text_data)
             data_validated = BidSubmissionSchema(**data)
             new_bid = await BidModelService.handle_new_bid(
-                data_validated.name,
-                data_validated.price
+                bid_id = self.bid_id,
+                name = data_validated.name,
+                amount = data_validated.price
             )
             await self.channel_layer.group_send(
                 self.room_group_name,
