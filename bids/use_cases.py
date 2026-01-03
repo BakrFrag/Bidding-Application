@@ -13,7 +13,7 @@ class BidModelService:
         """
         Get bid object from db if it exists, else return None.
         """
-        return Bid.objects.prefetch_related("history").filter(id=bid_id).first()
+        return Bid.objects.prefetch_related("history").filter(id=bid_id, status = "open").first()
         
     
     @staticmethod

@@ -3,7 +3,7 @@ from pydantic import ValidationError
 from channels.generic.websocket import AsyncWebsocketConsumer
 from .models import Bid, BidHistory
 from .schemas import BidSubmissionSchema
-
+from .use_cases import BidModelService
 class BidConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         """
@@ -12,7 +12,7 @@ class BidConsumer(AsyncWebsocketConsumer):
         self.bid_id = self.scope['url_route']['kwargs']['bid_id']
         self.room_group_name = f'bid_{self.bid_id}'
 
-        if not await self.bid_exists(self.bid_id):
+        if not await BidModelService.get_bid_by_id(self.bid_id):
             await self.close() 
             return 
     
@@ -27,7 +27,7 @@ class BidConsumer(AsyncWebsocketConsumer):
         """
         Send the latest bid data to the user who just connected
         """
-        current_state = await self.get_current_bid_state()
+        current_state = await BidModelService.get_bid_history(self.bid_id)
         await self.send(text_data=json.dumps({
             'type': 'initial_state',
             'data': current_state
@@ -51,7 +51,7 @@ class BidConsumer(AsyncWebsocketConsumer):
         try:
             data = json.loads(text_data)
             data_validated = BidSubmissionSchema(**data)
-            new_bid = await self.handle_new_bid(
+            new_bid = await BidModelService.handle_new_bid(
                 data_validated.name,
                 data_validated.price
             )
@@ -81,5 +81,4 @@ class BidConsumer(AsyncWebsocketConsumer):
             'bidder': event['bidder']
         }))
 
-    # --- Database Operations (Wrapped for Async) ---
    
