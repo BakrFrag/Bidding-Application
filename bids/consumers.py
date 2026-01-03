@@ -13,7 +13,7 @@ class BidConsumer(AsyncWebsocketConsumer):
         self.room_group_name = f'bid_{self.bid_id}'
 
         if not await self.bid_exists(self.bid_id):
-            await self.close() # Reject the connection
+            await self.close() 
             return 
     
         await self.channel_layer.group_add(
