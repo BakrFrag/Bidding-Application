@@ -33,10 +33,27 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
+
+if APP_SETTINGS.DEBUG:
+    """Development Tools"""
+    INSTALLED_APPS += [
+        'debug_toolbar',
+        'silk',
+    ]
+    MIDDLEWARE += [
+        'debug_toolbar.middleware.DebugToolbarMiddleware',
+        'silk.middleware.SilkyMiddleware',
+    ]
+    # Silk configuration
+    SILKY_PYTHON_PROFILER = True
+    # Debug Toolbar Internal IPs (Required to show up)
+    INTERNAL_IPS = ["127.0.0.1"]
+
+
 ROOT_URLCONF = "core.urls"
 
 
-WSGI_APPLICATION = "core.wsgi.application"
+# WSGI_APPLICATION = "core.wsgi.application"
 ASGI_APPLICATION = 'core.asgi.application'
 
 
