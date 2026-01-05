@@ -1,3 +1,4 @@
+from django.db import transaction
 from channels.db import database_sync_to_async
 from .models import Bid, BidHistory
 
@@ -37,20 +38,36 @@ class BidModelService:
     @staticmethod
     @database_sync_to_async
     def handle_new_bid(bid_id, name, amount):
-        # Reuse the sync helper
-        bid_obj = BidModelService._get_bid_sync(bid_id)
-        
-        if bid_obj is None:
+        """
+        Handle new Bid and lock the update on taht row in Db level - Row Level Lock - Thread-safe bid processing using Row Locking
+        """
+        try:
+            with transaction.atomic():
+                bid_obj = (
+                    Bid.objects
+                    .select_for_update()
+                    .prefetch_related('history')
+                    .get(id=bid_id, status="open")
+                )
+
+                latest = bid_obj.history.order_by('-price').first()
+                current_max = latest.price if latest else bid_obj.initial_price
+
+                if amount <= current_max:
+                    raise ValueError(f"Bid must be higher than {current_max}")
+
+                return BidHistory.objects.create(
+                    bid=bid_obj,
+                    bidder_name=name,
+                    price=amount
+                )
+        except Bid.DoesNotExist:
             raise ValueError("Bid not found or closed.")
 
-        latest = bid_obj.history.order_by('-price').first()
-        current_max = latest.price if latest else bid_obj.initial_price
 
-        if amount <= current_max:
-            raise ValueError(f"Bid must be higher than {current_max}")
 
-        return BidHistory.objects.create(
-            bid=bid_obj,
-            bidder_name=name,
-            price=amount
-        )
+
+
+       
+
+        
