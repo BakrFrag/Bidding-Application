@@ -1,6 +1,7 @@
 import json
 import logging
 import uuid
+import asyncio
 from pydantic import ValidationError
 from channels.generic.websocket import AsyncWebsocketConsumer
 from .schemas import BidSubmissionSchema
@@ -29,6 +30,8 @@ class BidConsumer(AsyncWebsocketConsumer):
         )
         await self.accept()
         await self.send_initial_state()
+        self.last_heartbeat = asyncio.get_event_loop().time()
+        self.heartbeat_task = asyncio.create_task(self.heartbeat_loop())
         logger.debug(f"WebSocket connection accepted. Trace ID: {self.trace_id} for channel: {self.room_group_name}")
 
     async def send_initial_state(self):
@@ -44,10 +47,26 @@ class BidConsumer(AsyncWebsocketConsumer):
         logger.info(f"Sent initial state to Trace ID: {self.trace_id} for channel: {self.room_group_name}")
         
 
+
+    async def heartbeat_loop(self):
+        """The 'Heart' of the connection"""
+        try:
+            while True:
+                await asyncio.sleep(30)
+                if asyncio.get_event_loop().time() - self.last_heartbeat > 70:
+                    logger.warning(f"No heartbeat received. Closing connection. Trace ID: {self.trace_id}")
+                    await self.close()
+                    break
+                await self.send(text_data=json.dumps({"type": "ping"}))
+
+        except asyncio.CancelledError:
+            logger.info(f"Heartbeat loop cancelled. Trace ID: {self.trace_id}")
+           
     async def disconnect(self, close_code):
         """
         Leave the group when the user closes the tab/internet drops
         """
+        self.heartbeat_task.cancel()
         await self.channel_layer.group_discard(
             self.room_group_name,
             self.channel_name
@@ -61,6 +80,11 @@ class BidConsumer(AsyncWebsocketConsumer):
         """
         try:
             data = json.loads(text_data)
+            if data.get('type') == 'pong':
+                self.last_heartbeat = asyncio.get_event_loop().time()
+                logger.debug(f"Heartbeat pong received. Trace ID: {self.trace_id}")
+                return
+            
             data_validated = BidSubmissionSchema(**data)
             logger.info(f"Received new bid from {data_validated.name} for amount {data_validated.price}. Trace ID  : {self.trace_id}")
             new_bid = await BidModelService.handle_new_bid(
@@ -76,6 +100,7 @@ class BidConsumer(AsyncWebsocketConsumer):
                     'bidder': new_bid.bidder_name
                 }
             )
+            self.last_heartbeat = asyncio.get_event_loop().time()
             logger.info(f"Broadcasted new bid of {new_bid.price} by {new_bid.bidder_name}. Trace ID: {self.trace_id}")
 
         except ValidationError as e:
