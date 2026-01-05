@@ -1,4 +1,4 @@
-import logging.config
+import os
 from pathlib import Path
 from core.configs import APP_SETTINGS
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -120,7 +120,7 @@ CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [APP_SETTINGS.REDIS_URL],
+            "hosts": [os.getenv('REDIS_URL') or APP_SETTINGS.REDIS_URL],
         },
     },
 }
