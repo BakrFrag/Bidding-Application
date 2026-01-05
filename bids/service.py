@@ -39,7 +39,7 @@ class BidModelService:
     @database_sync_to_async
     def handle_new_bid(bid_id, name, amount):
         """
-        Handle new Bid and lock the update on taht row in Db level - Row Level Lock - Thread-safe bid processing using Row Locking
+        Handle new Bid and lock the update on taht row in row on db - Row Level Lock - Thread-safe bid processing using Row Locking
         """
         try:
             with transaction.atomic():
