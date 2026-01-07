@@ -1,5 +1,5 @@
 import json
-import logging
+from logure import logger
 import uuid
 import asyncio
 from pydantic import ValidationError
@@ -7,7 +7,6 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from .schemas import BidSubmissionSchema
 from .service import BidModelService
 
-logger = logging.getLogger('bidding')
 
 class BidConsumer(AsyncWebsocketConsumer):
     async def connect(self):

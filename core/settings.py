@@ -1,4 +1,5 @@
-import os
+import sys 
+from loguru import logger
 from pathlib import Path
 from core.configs import APP_SETTINGS
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -125,3 +126,6 @@ CHANNEL_LAYERS = {
     },
 }
 
+# Logging Configuration
+logger.remove() 
+logger.add(sys.stdout, enqueue=True, level="DEBUG", format="{time} | {level} | {message}")
