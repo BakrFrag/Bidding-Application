@@ -11,10 +11,10 @@ secretGenerator:
     envs: [.env]
 
 resources:
-  - db/postgres-service.yaml
-  - db/postgres-db.yaml
-  - cache/redis-service.yaml
-  - cache/redis-db.yaml
-  - app/service.yaml
-  - app/deployment.yaml
-  - app/ingress.yaml
+  - db/service.yaml
+  - db/postgres.yaml
+  - redis-cache/service.yaml
+  - redis-cache/redis.yaml
+  - app-backend/service.yaml
+  - app-backend/deployment.yaml
+  - app-backend/ingress.yaml

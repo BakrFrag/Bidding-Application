@@ -9,7 +9,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-  - host: bidding.local
+  - host: bidding-app.local
     http:
       paths:
       - path: /
