@@ -18,3 +18,4 @@ resources:
   - app-backend/service.yaml
   - app-backend/deployment.yaml
   - app-backend/ingress.yaml
+  - app-backend/job.yaml

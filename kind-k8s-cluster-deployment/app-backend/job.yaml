@@ -1,0 +1,18 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: bidding-migration-job
+spec:
+  template:
+    spec:
+      containers:
+      - name: migration
+        image: bidding-app:latest
+        imagePullPolicy: IfNotPresent
+        command: ["python", "manage.py", "migrate", "--noinput"]
+        envFrom:
+        - configMapRef:
+            name: bidding-config   
+        - secretRef:
+            name: bidding-secrets  
+      restartPolicy: OnFailure
