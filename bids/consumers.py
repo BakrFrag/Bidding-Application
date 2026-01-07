@@ -62,15 +62,35 @@ class BidConsumer(AsyncWebsocketConsumer):
         except asyncio.CancelledError:
             logger.info(f"Heartbeat loop cancelled. Trace ID: {self.trace_id}")
            
+
+    async def _cancel_connection_tasks(self):
+        """
+        cancel user connection tasks on disconnect
+        """
+        if hasattr(self, 'heartbeat_task'):
+            self.heartbeat_task.cancel()
+            try:
+                await self.heartbeat_task
+            except asyncio.CancelledError:
+                logger.debug(f"Heartbeat task cancelled safely. Trace ID: {self.trace_id}")
+
+    async def _discard_group(self):
+        """
+        remove user from group after disconnect 
+        """
+        if hasattr(self, 'room_group_name'):
+            await self.channel_layer.group_discard(
+                self.room_group_name,
+                self.channel_name
+            )
+        
+
     async def disconnect(self, close_code):
         """
         Leave the group when the user closes the tab/internet drops
         """
-        self.heartbeat_task.cancel()
-        await self.channel_layer.group_discard(
-            self.room_group_name,
-            self.channel_name
-        )
+        await self._cancel_connection_tasks()
+        await self._discard_group()
         logger.debug(f"WebSocket disconnected. Trace ID: {self.trace_id} for channel: {self.room_group_name} with code {close_code}")
 
     async def receive(self, text_data):
