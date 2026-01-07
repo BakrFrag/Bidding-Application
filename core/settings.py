@@ -9,11 +9,11 @@ SECRET_KEY = APP_SETTINGS.SECRET_KEY
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = APP_SETTINGS.DEBUG
 
-ALLOWED_HOSTS = [
-    "lynda-discalced-donn.ngrok-free.dev", # ngrok, for testing purpose
-    "127.0.0.1",  # localhost
-    "localhost"
-]
+
+if DEBUG:
+    ALLOWED_HOSTS = ['*']
+else:
+    ALLOWED_HOSTS = APP_SETTINGS.ALLOWED_HOSTS
 
 
 # Application definition

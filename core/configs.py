@@ -1,5 +1,6 @@
 import os
-from typing import Optional
+from typing import Optional, Union
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 import dj_database_url
 
@@ -20,7 +21,18 @@ class AppSettings(BaseSettings):
     
     # Logging
     LOG_LEVEL: str = "DEBUG"
-    
+
+    #Allowed Hosts 
+    ALLOWED_HOSTS: Union[str, list[str]] = Field(default=["localhost", "127.0.0.1"])
+
+    @field_validator("ALLOWED_HOSTS", mode="before")
+    @classmethod
+    def parse_allowed_hosts(cls, v: str | list[str]) -> list[str]:
+        if isinstance(v, str):
+            return [host.strip() for host in v.split(",")]
+        return v
+
+
     @property
     def DATABASES(self):
 
