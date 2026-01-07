@@ -109,6 +109,7 @@ class BidConsumer(AsyncWebsocketConsumer):
                 logger.debug(f"Heartbeat pong received. Trace ID: {self.trace_id}")
                 return
             
+            self.last_heartbeat = asyncio.get_event_loop().time()
             data_validated = BidSubmissionSchema(**data)
             logger.info(f"Received new bid from {data_validated.name} for amount {data_validated.price}. Trace ID  : {self.trace_id}")
             new_bid = await BidModelService.handle_new_bid(
@@ -124,7 +125,7 @@ class BidConsumer(AsyncWebsocketConsumer):
                     'bidder': new_bid.bidder_name
                 }
             )
-            self.last_heartbeat = asyncio.get_event_loop().time()
+            
             logger.info(f"Broadcasted new bid of {new_bid.price} by {new_bid.bidder_name}. Trace ID: {self.trace_id}")
         except (json.JSONDecodeError, TypeError):
             logger.error(f"Malformed JSON received. Trace ID: {self.trace_id}")
