@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field, field_validator, ValidationError
-from decimal import Decimal, InvalidOperation
+from decimal import Decimal, ROUND_HALF_UP
 
 class BidSubmissionSchema(BaseModel):
     """
@@ -16,8 +16,9 @@ class BidSubmissionSchema(BaseModel):
             raise ValueError('Name cannot be empty or just spaces')
         return v.strip()
 
-    @field_validator('price')
-    def validate_decimal_precision(cls, v):
-        if v.as_tuple().exponent < -2:
-            raise ValueError('Price cannot have more than 2 decimal places')
-        return v
+    @field_validator('price', mode='after')
+    @classmethod
+    def round_price_to_two_decimals(cls, v: Decimal) -> Decimal:
+        
+        rounded_value = v.quantize(Decimal('0.00'), rounding=ROUND_HALF_UP)
+        return rounded_value
