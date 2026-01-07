@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bidding-web
+spec:
+  replicas: 2
+  selector:
+    matchLabels: { app: bidding-web }
+  template:
+    metadata:
+      labels: { app: bidding-web }
+    spec:
+      containers:
+      - name: web
+        image: bidding-app:latest
+        imagePullPolicy: Never 
+        ports: [{ containerPort: 8000 }]
+        envFrom:
+          - configMapRef: { name: bidding-config }
+          - secretRef: { name: bidding-secrets }
