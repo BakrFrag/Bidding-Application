@@ -1,5 +1,5 @@
 import json
-from logure import logger
+from loguru import logger
 import uuid
 import asyncio
 from pydantic import ValidationError
