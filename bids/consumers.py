@@ -53,10 +53,15 @@ class BidConsumer(AsyncWebsocketConsumer):
         try:
             while True:
                 await asyncio.sleep(30)
-                if asyncio.get_event_loop().time() - self.last_heartbeat > 70:
-                    logger.warning(f"No heartbeat received. Closing connection. Trace ID: {self.trace_id}")
+                time_since_heartbeat = asyncio.get_event_loop().time() - self.last_heartbeat
+                # logger.debug(f"Heartbeat check: {time_since_heartbeat:.1f}s since last heartbeat. Trace ID: {self.trace_id}")
+                
+                if time_since_heartbeat > 360:
+                    logger.warning(f"No heartbeat received for {time_since_heartbeat:.1f}s. Closing connection. Trace ID: {self.trace_id}")
                     await self.close()
                     break
+                
+                logger.debug(f"Sending ping to client. Trace ID: {self.trace_id}")
                 await self.send(text_data=json.dumps({"type": "ping"}))
 
         except asyncio.CancelledError:
@@ -122,7 +127,9 @@ class BidConsumer(AsyncWebsocketConsumer):
             )
             self.last_heartbeat = asyncio.get_event_loop().time()
             logger.info(f"Broadcasted new bid of {new_bid.price} by {new_bid.bidder_name}. Trace ID: {self.trace_id}")
-
+        except (json.JSONDecodeError, TypeError):
+            logger.error(f"Malformed JSON received. Trace ID: {self.trace_id}")
+            await self.send(text_data=json.dumps({"error": "Invalid JSON format"}))
         except ValidationError as e:
             logger.error(f"Validation error for bid submission. Trace ID: {self.trace_id}. Errors: {e.errors()}")
             await self.send(text_data=json.dumps({'type': 'error', 'message': e.errors()}))

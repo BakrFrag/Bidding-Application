@@ -28,11 +28,12 @@ services:
       target: runtime # Use the runtime stage for the final image
     command: >
       sh -c "python manage.py migrate &&
-             daphne -b 0.0.0.0 -p 8000 core.asgi:application"
+             exec daphne -v 2 -b 0.0.0.0 -p 8000 core.asgi:application"
     ports:
       - "8000:8000"
     environment:
       - PYTHONUNBUFFERED=1
+      - DJANGO_LOG_LEVEL=DEBUG
     env_file: .env
     depends_on:
       db:

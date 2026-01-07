@@ -4,7 +4,29 @@ from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 import dj_database_url
 
-class AppSettings(BaseSettings):
+
+
+class DBSettings(BaseSettings):
+    """
+    Database settings managed with Pydantic.
+    """
+    DB_USER: str = "postgres"
+    POSTGRES_PASSWORD: str = "postgres"
+    DB_HOST: str = "db"
+    DB_PORT: int = 5432
+    DB_NAME: str = "postgres"
+
+    @property
+    def DATABASES(self):
+        """
+        default database configuration
+        """
+        url = f"postgres://{self.DB_USER}:{self.POSTGRES_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
+        
+        return {
+            "default": dj_database_url.parse(url) 
+        }
+class AppSettings(DBSettings):
     """
     Application settings managed with Pydantic and env variables handkling.
     """
@@ -16,7 +38,9 @@ class AppSettings(BaseSettings):
     
     # Secrets
     SECRET_KEY: str
-    DATABASE_URL: Optional[str] = None
+    ALGORITHM: str = "HS256"
+
+    # REDIS
     REDIS_URL: str = "redis://127.0.0.1:6379/0"
     
     # Logging
@@ -31,15 +55,6 @@ class AppSettings(BaseSettings):
         if isinstance(v, str):
             return [host.strip() for host in v.split(",")]
         return v
-
-
-    @property
-    def DATABASES(self):
-
-        return {
-            "default":  dj_database_url.parse(self.DATABASE_URL) if self.DATABASE_URL else dj_database_url.config(
-        default=f"postgres://{os.getenv('DB_USER')}:{os.getenv('DB_PASSWORD')}@{os.getenv('DB_HOST')}:{os.getenv('DB_PORT')}/{os.getenv('DB_NAME')}"
-    )}
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 

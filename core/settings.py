@@ -120,38 +120,8 @@ CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [APP_SETTINGS.REDIS_URL or os.getenv('REDIS_URL')],
+            "hosts": [APP_SETTINGS.REDIS_URL],
         },
     },
 }
 
-# async Queu logger handler
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'verbose': {
-            'format': '{levelname} {asctime} {module} {message}',
-            'style': '{',
-        },
-    },
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-            'formatter': 'verbose',
-        },
-        
-        'queue_handler': {
-            'class': 'logging.handlers.QueueHandler',
-            'handlers': ['console'], 
-            'respect_handler_level': True,
-        },
-    },
-    'loggers': {
-        'bidding': {
-            'handlers': ['queue_handler'],
-            'level': 'INFO',
-            'propagate': False,
-        },
-    },
-}
