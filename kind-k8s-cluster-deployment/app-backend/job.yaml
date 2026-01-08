@@ -9,13 +9,46 @@ spec:
       - name: migration
         image: bidding-app:latest
         imagePullPolicy: IfNotPresent
-        command: 
+        command:
           - "sh"
           - "-c"
-          - "python manage.py migrate --noinput && echo 'Migrations completed successfully' && exit 0"
+          - |
+            echo "Searching for database at db:5432..."
+            until python -c "import socket; s = socket.socket(); s.connect(('db', 5432))" 2>/dev/null; do
+              echo "Database is not reachable yet - sleeping..."
+              sleep 2
+            done
+            echo "Database is up! Starting migrations..."
+            python manage.py migrate --noinput && \
+            python -c "
+            import os, psycopg2
+            print(os.getenv('POSTGRES_DB'))
+            print(os.getenv('POSTGRES_USER'))
+            print(os.getenv('POSTGRES_PASSWORD'))
+            print(os.getenv('DB_HOST'))
+            conn = psycopg2.connect(
+                dbname=os.getenv('POSTGRES_DB'),
+                user=os.getenv('POSTGRES_USER'),
+                password=os.getenv('POSTGRES_PASSWORD'),
+                host=os.getenv('DB_HOST'),
+                port=os.getenv('DB_PORT', 5432)
+            )
+            with conn.cursor() as cur:
+                with open('/mnt/sql/seed_bids.sql', 'r') as f:
+                    cur.execute(f.read())
+                conn.commit()
+            print('Initial data seeded successfully')
+            " && exit 0
+        volumeMounts:
+        - name: sql-file-volume
+          mountPath: /mnt/sql
         envFrom:
         - configMapRef:
             name: bidding-config   
         - secretRef:
             name: bidding-secrets  
+      volumes:
+      - name: sql-file-volume
+        configMap:
+          name: seed-sql-config
       restartPolicy: OnFailure
