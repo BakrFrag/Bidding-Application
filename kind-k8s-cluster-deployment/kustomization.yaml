@@ -5,6 +5,9 @@ kind: Kustomization
 configMapGenerator:
   - name: bidding-config
     envs: [.env]
+  - name: seed-sql-config
+    files:
+      - app-backend/seed_bids.sql
 
 secretGenerator:
   - name: bidding-secrets

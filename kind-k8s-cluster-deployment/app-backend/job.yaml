@@ -9,7 +9,10 @@ spec:
       - name: migration
         image: bidding-app:latest
         imagePullPolicy: IfNotPresent
-        command: ["python", "manage.py", "migrate", "--noinput"]
+        command: 
+          - "sh"
+          - "-c"
+          - "python manage.py migrate --noinput && echo 'Migrations completed successfully' && exit 0"
         envFrom:
         - configMapRef:
             name: bidding-config   
