@@ -1,0 +1,24 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+
+configMapGenerator:
+  - name: bidding-config
+    envs: [.env]
+  - name: seed-sql-config
+    files:
+      - app-backend/seed_bids.sql
+
+secretGenerator:
+  - name: bidding-secrets
+    envs: [.env]
+
+resources:
+  - db/service.yaml
+  - db/postgres.yaml
+  - redis-cache/service.yaml
+  - redis-cache/redis.yaml
+  - app-backend/service.yaml
+  - app-backend/deployment.yaml
+  - app-backend/ingress.yaml
+  - app-backend/job.yaml
